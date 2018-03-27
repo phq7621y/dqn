@@ -1,7 +1,7 @@
 
 import pygame, sys, os, time
 from pygame.locals import *
-
+import numpy as np
 
 # Game Initialization
 pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=4096)
@@ -212,6 +212,7 @@ def main():
         paddle2 = EnemyMovement(ball, ballDirX, ballDirY, paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
         pygame.display.update()
+        pixels = pygame.surfarray.array2d(pygame.display.get_surface)
         clock.tick(fps)
 
 if __name__=='__main__':
