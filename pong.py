@@ -212,7 +212,7 @@ def main():
         paddle2 = EnemyMovement(ball, ballDirX, ballDirY, paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
         pygame.display.update()
-        pixels = pygame.surfarray.array2d(pygame.display.get_surface)
+        pixels = pygame.surfarray.array2d(pygame.display.get_surface())
         clock.tick(fps)
 
 if __name__=='__main__':
