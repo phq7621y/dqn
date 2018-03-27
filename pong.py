@@ -174,6 +174,7 @@ def main():
     start = time.time()
 
     while not over:
+        pygame.image.save(screen, "screenshot.jpeg")
         elapsed = time.time() - start
         if game_type == "Score":
             if  score1 == max_score or score2 == max_score:
