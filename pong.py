@@ -66,22 +66,22 @@ def BallMovement(ball, ballDirX, ballDirY):
 
 def WallCollision(ball, ballDirX, ballDirY):
     over = ""
-    if ball.top == (lineWidth) or ball.bottom == (screen_height - lineWidth):
+    if ball.top <= (lineWidth) or ball.bottom >= (screen_height - lineWidth):
         ballDirY = ballDirY * -1
-    if ball.left == (lineWidth) or ball.right == (screen_width - lineWidth):
+    if ball.left <= (lineWidth) or ball.right >= (screen_width - lineWidth):
         ballDirX = ballDirX * -1
-        if ball.left == (lineWidth):
+        if ball.left <= (lineWidth):
             over = "L"
-        if ball.right == (screen_width - lineWidth):
+        if ball.right >= (screen_width - lineWidth):
             over = "R"
     return ballDirX, ballDirY, over
 
 
 
 def BallCollision(ball, paddle1, paddle2, ballDirX):
-    if ballDirX == -1 and paddle1.right == ball.left and paddle1.top < ball.top and paddle1.bottom > ball.bottom:
+    if ballDirX < 0 and paddle1.right >= ball.left and paddle1.top < ball.top and paddle1.bottom > ball.bottom:
         return -1
-    elif ballDirX == 1 and paddle2.left == ball.right and paddle2.top < ball.top and paddle2.bottom > ball.bottom:
+    elif ballDirX > 0 and paddle2.left <= ball.right and paddle2.top < ball.top and paddle2.bottom > ball.bottom:
         return -1
     else:
         return 1
@@ -126,18 +126,18 @@ def timeHandler(start):
     screen.blit(text1, textRect1)
 
 
-def EnemyMovement(ball, ballDirX, paddle2):
-    if ballDirX == -1:
+def EnemyMovement(ball, ballDirX, ballDirY, paddle2):
+    if ballDirX < 0:
         if paddle2.centery < (screen_height / 2):
-            paddle2.y += 1
+            paddle2.y += abs(ballDirY)
         elif paddle2.centery > (screen_height / 2):
-            paddle2.y -= 1
+            paddle2.y -= abs(ballDirY)
             # if ball moving towards bat, track its movement.
-    elif ballDirX == 1:
+    elif ballDirX > 0:
         if paddle2.centery < ball.centery:
-            paddle2.y += 1
+            paddle2.y += abs(ballDirY)
         else:
-            paddle2.y -= 1
+            paddle2.y -= abs(ballDirY)
     return paddle2
 
 
@@ -152,8 +152,8 @@ def main():
     score1=0
     score2=0
 
-    ballDirX = -1
-    ballDirY = -1
+    ballDirX = -8
+    ballDirY = -8
 
     paddle1=pygame.Rect(paddleOffset, playerPos, lineWidth, paddleSize)
     paddle2 = pygame.Rect(screen_width - paddleOffset - lineWidth, enemyPos, lineWidth, paddleSize)
@@ -209,7 +209,7 @@ def main():
         elif game_type == "Time":
             timeHandler(start)
         # score = UpdateScore(paddle1, ball, score, ballDirX)
-        paddle2 = EnemyMovement(ball, ballDirX, paddle2)
+        paddle2 = EnemyMovement(ball, ballDirX, ballDirY, paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
         pygame.display.update()
         clock.tick(fps)
