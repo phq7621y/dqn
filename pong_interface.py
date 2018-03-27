@@ -1,6 +1,7 @@
 
 import pygame, sys, os, time
 from pygame.locals import *
+import pygame.surfarray
 import numpy as np
 
 # Game Initialization
@@ -36,6 +37,7 @@ fps=2000
 lineWidth=10
 paddleSize=50
 paddleOffset=20
+
 
 
 def text_format(text, textSize, textColor):
@@ -86,17 +88,6 @@ def BallCollision(ball, paddle1, paddle2, ballDirX):
     else:
         return 1
 
-def UpdateScore(paddle1, ball, score, ballDirX):
-    if ball.left == lineWidth:
-        return 0
-    elif ballDirX == -1 and paddle1.right == ball.left and paddle1.top < ball.top and paddle1.bottom > ball.bottom:
-        score += 1
-        return score
-    elif ball.right == screen_width - lineWidth:
-        score=0
-        return score
-    else:
-        return score
 
 def UpdateScore_2(score_update, score1, score2):
     if score_update == "":
@@ -142,78 +133,107 @@ def EnemyMovement(ball, ballDirX, paddle2):
 
 
 
-def main():
-    game_type = "Time"
-    ballPosX=screen_width/2 - lineWidth/2
-    ballPosY=screen_height/2 - lineWidth/2
+# sound.play(loops=-1)
+max_score = 5
+max_time = 30
 
-    playerPos=(screen_height-paddleSize)/2
-    enemyPos=(screen_height-paddleSize)/2
-    score1=0
-    score2=0
 
-    ballDirX = -1
-    ballDirY = -1
 
-    paddle1=pygame.Rect(paddleOffset, playerPos, lineWidth, paddleSize)
-    paddle2 = pygame.Rect(screen_width - paddleOffset - lineWidth, enemyPos, lineWidth, paddleSize)
-    ball=pygame.Rect(ballPosX, ballPosY, lineWidth, lineWidth)
 
-    BackgroundGameplay()
-    Paddle(paddle1)
-    Paddle(paddle2)
-    Ball(ball)
-    pygame.mouse.set_visible(0)
 
-    # sound.play(loops=-1)
-    over = False
-    max_score = 5
-    max_time = 30
 
-    end_round = ""
-    start = time.time()
 
-    while not over:
-        pygame.image.save(screen, "screenshot.jpeg")
-        elapsed = time.time() - start
-        if game_type == "Score":
-            if  score1 == max_score or score2 == max_score:
-                pygame.quit()
-                sys.exit()
-        elif game_type == "Time":
-            if elapsed > max_time or end_round == "L" or end_round =="R":
-                pygame.quit()
-                sys.exit()
+class pong:
+    def __init__(self, game_type):
+        self.game_type = game_type
+        self.start()
+        pass
 
-        for event in pygame.event.get():
-            if event.type==QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type==MOUSEMOTION:
-                mousex, mousey=event.pos
-                paddle1.y=mousey
+
+    def start(self):
+        self.time = 0
+        self.score1 = 0
+        self.score2 = 0
+        self.over = False
+        self.start_time = time.time()
+        self.ballPosX=screen_width/2 - lineWidth/2
+        self.ballPosY=screen_height/2 - lineWidth/2
+
+        self.playerPos=(screen_height-paddleSize)/2
+        self.enemyPos=(screen_height-paddleSize)/2
+
+        self.ballDirX = -1
+        self.ballDirY = -1
+
+        self.paddle1=pygame.Rect(paddleOffset, self.playerPos, lineWidth, paddleSize)
+        self.paddle2 = pygame.Rect(screen_width - paddleOffset - lineWidth, self.enemyPos, lineWidth, paddleSize)
+        self.ball=pygame.Rect(self.ballPosX,self. ballPosY, lineWidth, lineWidth)
+
+        self.end_round = ""
+        BackgroundGameplay()
+        Paddle(self.paddle1)
+        Paddle(self.paddle2)
+        Ball(self.ball)
+        pygame.mouse.set_visible(0)
+
+
+
+
+    def get_pixels(self):
+        return self.pixels
+
+
+
+    def iterate(self, action):
+        elapsed = time.time() - self.start_time
+        if self.game_type == "Score":
+            if  self.score1 == max_score or self.score2 == max_score:
+                self.over = True
+        elif self.game_type == "Time":
+            if elapsed > max_time or self.end_round == "L" or self.end_round =="R":
+                self.over = True
+
+        if action == 1:
+            self.paddle1.y= self.paddle1.y - 10
+        elif action == 2:
+            self.paddle1.y= self.paddle1.y + 10
+
+        if self.paddle1.y < 0:
+            self.paddle1.y = 0 + lineWidth
+        elif self.paddle1.y > screen_height - lineWidth:
+            self.paddle1.y = screen_height - lineWidth
 
 
         BackgroundGameplay()
-        Paddle(paddle1)
-        Paddle(paddle2)
-        Ball(ball)
+        Paddle(self.paddle1)
+        Paddle(self.paddle2)
+        Ball(self.ball)
 
-        ball=BallMovement(ball, ballDirX, ballDirY)
-        ballDirX, ballDirY, end_round = WallCollision(ball, ballDirX, ballDirY)
-        ball_coll = BallCollision(ball, paddle1, paddle2, ballDirX)
-        ballDirX = ballDirX * ball_coll
-        if game_type == "Score":
-            score1,score2 = UpdateScore_2(end_round,score1,score2)
-            ScoreHandler(score1,score2)
-        elif game_type == "Time":
-            timeHandler(start)
-        # score = UpdateScore(paddle1, ball, score, ballDirX)
-        paddle2 = EnemyMovement(ball, ballDirX, paddle2)
+        self.ball=BallMovement(self.ball, self.ballDirX, self.ballDirY)
+        self.ballDirX, self.ballDirY, self.end_round = WallCollision(self.ball, self.ballDirX, self.ballDirY)
+        ball_coll = BallCollision(self.ball, self.paddle1,self.paddle2, self.ballDirX)
+        ballDirX = self.ballDirX * ball_coll
+        if self.game_type == "Score":
+            self.score1,self.score2 = UpdateScore_2(self.end_round,self.score1,self.score2)
+            ScoreHandler(self.score1,self.score2)
+        elif self.game_type == "Time":
+            timeHandler(self.start_time)
+        self.paddle2 = EnemyMovement(self.ball, self.ballDirX, self.paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
-        pygame.display.update()
-        pixels = pygame.surfarray.array2d(pygame.display.get_surface)
+        # pygame.display.update()
+        surface = pygame.display.get_surface()
+        self.pixels = pygame.surfarray.array3d(surface)
         clock.tick(fps)
+        if self.game_type == "Score":
+            return self.score1
+        else:
+            return elapsed, self.over
 
-if __name__=='__main__':
-    main()
+
+    def quit_game(self):
+        pygame.quit()
+        sys.exit()
+
+
+# if __name__=='__main__':
+#     main()
