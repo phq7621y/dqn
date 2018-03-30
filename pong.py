@@ -185,7 +185,7 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        for event in pygame.event.get():
+        for event in pygame.event.get(n):
             if event.type==QUIT:
                 pygame.quit()
                 sys.exit()

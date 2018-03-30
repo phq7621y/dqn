@@ -111,7 +111,7 @@ def ScoreHandler(score1, score2):
 def timeHandler(start):
     end = time.time()
     elap = end - start
-    text1=text_format("Time 1: %d" % (elap), 24, white)
+    text1=text_format("Time: %d" % (elap), 24, white)
     textRect1=text1.get_rect()
     textRect1.topleft=(50, 25)
     screen.blit(text1, textRect1)
@@ -194,9 +194,9 @@ class pong:
                 self.over = True
 
         if action == 1:
-            self.paddle1.y= self.paddle1.y - 10
+            self.paddle1.y= self.paddle1.y - 5
         elif action == 2:
-            self.paddle1.y= self.paddle1.y + 10
+            self.paddle1.y= self.paddle1.y + 5
 
         if self.paddle1.y < 0:
             self.paddle1.y = 0 + lineWidth
@@ -221,6 +221,7 @@ class pong:
         self.paddle2 = EnemyMovement(self.ball, self.ballDirX, self.ballDirY self.paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
         # pygame.display.update()
+        pygame.display.update()
         surface = pygame.display.get_surface()
         self.pixels = pygame.surfarray.array3d(surface)
         clock.tick(fps)
