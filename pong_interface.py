@@ -2,6 +2,7 @@
 import pygame, sys, os, time
 from pygame.locals import *
 import pygame.surfarray
+from skimage.measure import block_reduce
 import numpy as np
 
 # Game Initialization
@@ -169,6 +170,8 @@ class pong:
         self.paddle2 = pygame.Rect(screen_width - paddleOffset - lineWidth, self.enemyPos, lineWidth, paddleSize)
         self.ball=pygame.Rect(self.ballPosX,self. ballPosY, lineWidth, lineWidth)
 
+        # self.pixels = np.zeros((8,00,600))
+
         self.end_round = ""
         BackgroundGameplay()
         Paddle(self.paddle1)
@@ -194,9 +197,9 @@ class pong:
                 self.over = True
 
         if action == 1:
-            self.paddle1.y= self.paddle1.y - 5
+            self.paddle1.y= self.paddle1.y - 10
         elif action == 2:
-            self.paddle1.y= self.paddle1.y + 5
+            self.paddle1.y= self.paddle1.y + 10
 
         if self.paddle1.y < 0:
             self.paddle1.y = 0 + lineWidth
@@ -218,12 +221,14 @@ class pong:
             ScoreHandler(self.score1,self.score2)
         elif self.game_type == "Time":
             timeHandler(self.start_time)
-        self.paddle2 = EnemyMovement(self.ball, self.ballDirX, self.ballDirY self.paddle2)
+        self.paddle2 = EnemyMovement(self.ball, self.ballDirX, self.ballDirY, self.paddle2)
         pygame.display.set_caption('Python - Pygame Simple Arcade Game')
         # pygame.display.update()
         pygame.display.update()
         surface = pygame.display.get_surface()
-        self.pixels = pygame.surfarray.array3d(surface)
+        self.pixels = pygame.surfarray.array2d(surface)
+        self.pixels = np.where(self.pixels > 0 ,1,0)
+        self.pixels = block_reduce(self.pixels, block_size = (10,10), func = np.max )
         clock.tick(fps)
         if self.game_type == "Score":
             return self.score1
