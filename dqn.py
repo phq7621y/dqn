@@ -30,7 +30,7 @@ layer2 = tf.layers.conv2d(layer1, channels = 16, kernel_size = (8,8), stride = 5
 
 flat_layer = tf.reshape(layer2, [-1, 5 * 7 *16 ])
 
-hidden_layer = tf.layers.dense(flat_layer, units = 128, activation=tf.nn.relu))
+hidden_layer = tf.layers.dense(flat_layer, units = 128, activation=tf.nn.relu)
 ## 128 x 1 connected layer
 
 output_layer = tf.layers.dense(hidden_layer, units =  3)
