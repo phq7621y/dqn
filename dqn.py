@@ -36,7 +36,7 @@ conv2 = tf.contrib.layers.flatten(conv2)
 fc0 = tf.contrib.layers.fully_connected(conv2, 512, weights_initializer=initializer, biases_initializer=initializer)
 outputs = tf.contrib.layers.fully_connected(fc0, ACTION, None, weights_initializer=initializer, biases_initializer=initializer)
 
-readout_action = tf.tensordot(outputs, action, axes = 1)
+readout_action = tf.tensordot(outputs, action, axes = ((1),(1)))
 
 loss = tf.reduce_mean(tf.square(y - readout_action))
 
