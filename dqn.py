@@ -7,7 +7,7 @@ Created on Tue Mar 20 11:22:54 2018
 import numpy as np
 import tensorflow as tf
 import cv2
-from collection import deque
+from collections import deque
 import random
 
 tf.reset_default_graph()
@@ -23,20 +23,20 @@ ACTION = 3
 
 learning_rate = 1e-6
 
-action = tf.place(tf.float32, [None, ACTION])
-y = tf.place(tf.float32, [None])
+action = tf.placeholder(tf.float32, [None, ACTION])
+y = tf.placeholder(tf.float32, [None])
 
 inputs = tf.placeholder(tf.float32, [None,80,80,4])
 
 initializer = tf.contrib.layers.variance_scaling_initializer()
-conv0 = tf.contribs.layers.conv2d(inputs, 32, 8, 4, "SAME", weights_initializer=initializer, biases_initializer=initializer, name="conv0")
-conv1 = tf.contribs.layers.conv2d(conv0, 64, 4, 2, "SAME", weights_initializer=initializer, biases_initializer=initializer, name="conv1")
-conv2 = tf.contribs.layers.conv2d(conv1, 64, 3, 1, "SAME", weights_initializer=initializer, biases_initializer=initializer, name="conv2")
+conv0 = tf.contrib.layers.conv2d(inputs, 32, 8, 4, "SAME", weights_initializer=initializer, biases_initializer=initializer)
+conv1 = tf.contrib.layers.conv2d(conv0, 64, 4, 2, "SAME", weights_initializer=initializer, biases_initializer=initializer)
+conv2 = tf.contrib.layers.conv2d(conv1, 64, 3, 1, "SAME", weights_initializer=initializer, biases_initializer=initializer)
 conv2 = tf.contrib.layers.flatten(conv2)
-fc0 = tf.contribs.layers.fully_connected(conv2, 512, weights_initializer=initializer, biases_initializer=initializer, name="fc0")
-outputs = tf.contribs.layers.fully_connected(conv2, ACTION, None, weights_initializer=initializer, biases_initializer=initializer, name="out")
+fc0 = tf.contrib.layers.fully_connected(conv2, 512, weights_initializer=initializer, biases_initializer=initializer)
+outputs = tf.contrib.layers.fully_connected(fc0, ACTION, None, weights_initializer=initializer, biases_initializer=initializer)
 
-readout_action = tf.tensordot(outputs, action, axis = 1)
+readout_action = tf.tensordot(outputs, action, axes = 1)
 
 loss = tf.reduce_mean(tf.square(y - readout_action))
 
@@ -79,13 +79,13 @@ with tf.Session() as sess:
     
     t=0
     while 1:
-        actions_dist = sess.run(outputs, feeddict = {inputs: state0}) #[0]
+        actions_dist = sess.run(outputs, feed_dict = {inputs: [state0]}) #[0]
         actions = np.zeros(ACTION)
         if np.random.rand() <= epsilon or t <= 500:
             action_index = np.random.choice(actions)
         else:
             action_index = np.argmax(actions_dist)
-        actions[action_index] = 1
+        actions[int(action_index)] = 1
         
         #decrease epsilon
         if epsilon > 0.05 and t > 500: 
@@ -113,15 +113,15 @@ with tf.Session() as sess:
             state1_batch = [d[3] for d in minibatch]
 
             targets = []
-            actions_dist1 = sess.run(outputs, feeddict = {inputs: states1_batch})
+            actions_dist1 = sess.run(outputs, feed_dict = {inputs: state1_batch})
             for i in range(len(minibatch)):
-                if minibacth[i][4]:
+                if minibatch[i][4]:
                     targets.append(reward_batch[i])
                 else:
                     targets.append(reward_batch[i] + 0.99 * np.max(actions_dist1[i]))
                 
-            loss_t = sess.run(loss, dictfeed = {y:targets, inputs: state0_batch, action: actions_batch})
-            sess.run(train_ops, dictfeed = {y:targets, inputs: state0_batch, action: actions_batch})
+            loss_t = sess.run(loss, feed_dict = {y:targets, inputs: state0_batch, action: actions_batch})
+            sess.run(train_ops, feed_dict = {y:targets, inputs: state0_batch, action: actions_batch})
             
             #writing loss to file
             loss_file.write(str(loss_t)+ '\n')
