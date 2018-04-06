@@ -13,7 +13,7 @@ import random
 tf.reset_default_graph()
 
 
-
+GAME = 'pong' # the name of the game being played for saved networks
 ACTION = 3
 
 
@@ -64,9 +64,23 @@ screen0 = cv2.cvtColor(cv2.resize(screen0, (80, 80)), cv2.COLOR_BGR2GRAY)
 ret, screen0 = cv2.threshold(screen0,1,255,cv2.THRESH_BINARY)
 state0 = np.stack((screen0, screen0, screen0, screen0), axis = 2)
 
+# saving and loading networks
+saver = tf.train.Saver()
+
+# printing
+loss_file = open("logs_" + GAME + "/loss.txt", 'w')
+    
 with tf.Session() as sess:    
     init = tf.global_variables_initializer()
     sess.run(init)
+    
+    checkpoint = tf.train.get_checkpoint_state("saved_networks")
+    if checkpoint and checkpoint.model_checkpoint_path:
+        saver.restore(sess, checkpoint.model_checkpoint_path)
+        print("Successfully loaded:", checkpoint.model_checkpoint_path)
+    else:
+        print ("Could not find old network weights")
+    
     epsilon = 1
     
     t=0
@@ -111,9 +125,13 @@ with tf.Session() as sess:
                     targets.append(reward_batch[i])
                 else:
                     targets.append(reward_batch[i] + 0.99 * np.max(actions_dist1[i]))
-            
+                
+            loss_t = sess.run(loss, dictfeed = {y:targets, input: state0_batch, action: actions_batch})
             sess.run(train_ops, dictfeed = {y:targets, input: state0_batch, action: actions_batch})
-        
+            
+            #writing loss to file
+            loss_file.write(str(loss_t)+ '\n')
+            
         #update frames
         screen0 = screen1
         t += 1
@@ -121,6 +139,8 @@ with tf.Session() as sess:
          # save progress every 10000 iterations
         if t % 10000 == 0:
             saver.save(sess, 'saved_networks/' + GAME + '-dqn', global_step = t)
+            
+            
         
             
             
