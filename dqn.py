@@ -62,7 +62,7 @@ state0 = np.stack((screen0, screen0, screen0, screen0), axis = 2)
 saver = tf.train.Saver()
 
 # printing
-loss_file = open("logs_" + GAME + "/loss.txt", 'w')
+loss_file = open("logs_" + GAME + "/loss_v2.txt", 'w')
     
 with tf.Session() as sess:    
     init = tf.global_variables_initializer()
@@ -82,10 +82,10 @@ with tf.Session() as sess:
         actions_dist = sess.run(outputs, feed_dict = {inputs: [state0]}) #[0]
         actions = np.zeros(ACTION)
         if np.random.rand() <= epsilon or t <= 500:
-            action_index = np.random.choice(actions)
+            action_index = np.random.choice(ACTION)
         else:
             action_index = np.argmax(actions_dist)
-        actions[int(action_index)] = 1
+        actions[action_index] = 1
         
         #decrease epsilon
         if epsilon > 0.05 and t > 500: 
@@ -96,7 +96,7 @@ with tf.Session() as sess:
             screen1, reward1, terminated = game.frame_step(actions)
             screen1 = cv2.cvtColor(cv2.resize(screen1, (80, 80)), cv2.COLOR_BGR2GRAY)
             ret, screen1 = cv2.threshold(screen1,1,255,cv2.THRESH_BINARY)
-            state1 = np.stack((screen1, screen1, screen1, screen1), axis = 2)
+            state1 = np.stack((screen1, state0[:,:,0], state0[:,:,1], state0[:,:,2]), axis = 2)
             
             D.append((state0, actions, reward1, state1, terminated))
             if len(D) > 590000:
@@ -127,12 +127,12 @@ with tf.Session() as sess:
             loss_file.write(str(loss_t)+ '\n')
             
         #update frames
-        screen0 = screen1
+        state0 = state1
         t += 1
         
          # save progress every 10000 iterations
         if t % 10000 == 0:
-            saver.save(sess, 'saved_networks/' + GAME + '-dqn', global_step = t)
+            saver.save(sess, 'saved_networks/' + GAME + '-dqn-v2', global_step = t)
             
             
         
